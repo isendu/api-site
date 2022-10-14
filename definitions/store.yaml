@@ -1,0 +1,3025 @@
+openapi: 3.0.3
+info:
+  title: OpenApi api-store documentation
+  description: OpenApi api-store documentation
+  version: 1.0.0
+  basePath: /api-store
+components:
+  securitySchemes:
+    oaAuth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          description: OAuth2 client credentials flow must be a Json Post
+          tokenUrl: /api-store/oauth/token
+          scopes:
+            write:order: Create/delete/update order
+            read:order: Read order
+            write:shipment: Create/delete shipment
+            read:shipment: Read shipment
+            read:tracking: Get tracking
+            read:carriers: Get carriers
+            read:parcels: Get parcels
+    bearerS2SAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas: {}
+paths:
+  /v1/carriers/:
+    get:
+      operationId: getShippingCarriers
+      summary: Get shipping carriers
+      tags:
+        - carriers
+      description: Get available shipping carriers for the current company
+      security:
+        - oaAuth:
+            - carriers:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                    carrierName:
+                      type: string
+                    internalCode:
+                      type: string
+                    services:
+                      type: array
+                      items:
+                        type: string
+                    isIsenduCarrier:
+                      type: boolean
+                  required:
+                    - id
+                    - carrierName
+                    - internalCode
+                    - services
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/isu/{uuid}:
+    get:
+      operationId: getOrderByIsuId
+      summary: Get order by Isendu Id
+      tags:
+        - orders
+      description: Get order data using the Isendu order Id
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - orders:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    format: regex
+                    pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
+                    type: string
+                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                  updated:
+                    format: date-time
+                    type: string
+                  created:
+                    format: date-time
+                    type: string
+                  status:
+                    enum:
+                      - pending
+                      - partially_fulfilled
+                      - fulfilled
+                      - error
+                      - refunded
+                      - exception
+                      - cancelled
+                      - generating_labels
+                      - externally_handled
+                      - in_transit
+                      - delivered
+                  storeOrderId:
+                    type: string
+                  storeInternalOrderId:
+                    type: string
+                  storeCreationDate:
+                    format: date-time
+                    type: string
+                  total:
+                    type: number
+                  subtotal:
+                    type: number
+                  tip:
+                    type: number
+                  shippingTotal:
+                    type: number
+                  currency:
+                    enum:
+                      - EUR
+                      - USD
+                      - GBP
+                  shippingMethod:
+                    type: string
+                  paymentMethod:
+                    type: string
+                  name:
+                    type: string
+                  customerName:
+                    type: string
+                  itemsCount:
+                    type: number
+                  firstItemImageUrl:
+                    type: string
+                  trackingInformation:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                        url:
+                          type: string
+                        status:
+                          enum:
+                            - P
+                            - T
+                            - D
+                            - E
+                            - F
+                            - R
+                            - U
+                      required:
+                        - number
+                  customerNote:
+                    type: string
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                      date:
+                        format: date-time
+                        type: string
+                    required:
+                      - message
+                  shippingInformation:
+                    type: object
+                    properties:
+                      parcels:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                            name:
+                              type: string
+                            parcelId:
+                              type: string
+                            monetaryValue:
+                              type: number
+                            currency:
+                              enum:
+                                - EUR
+                                - USD
+                                - GBP
+                            referenceNumber:
+                              type: string
+                            description:
+                              type: string
+                            width:
+                              type: number
+                            height:
+                              type: number
+                            length:
+                              type: number
+                            weight:
+                              type: number
+                            packagingWeight:
+                              type: number
+                            weightUnit:
+                              enum:
+                                - g
+                                - kg
+                                - oz
+                                - lb
+                            lengthUnit:
+                              enum:
+                                - cm
+                                - in
+                            isWeightDynamic:
+                              type: boolean
+                          required:
+                            - width
+                            - height
+                            - length
+                            - weight
+                            - weightUnit
+                            - lengthUnit
+                      shipmentDetails:
+                        type: object
+                        properties:
+                          description:
+                            type: string
+                          carrierNotes:
+                            type: string
+                          goodsMonetaryValue:
+                            type: number
+                          goodsCurrency:
+                            enum:
+                              - EUR
+                              - USD
+                              - GBP
+                          shipmentReferences:
+                            type: array
+                            items:
+                              type: string
+                      additionalServices:
+                        type: object
+                        properties:
+                          insurance:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          cod:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          saturdayDelivery:
+                            type: boolean
+                          signature:
+                            type: boolean
+                          adultSignature:
+                            type: boolean
+                      selectedCarrierId:
+                        type: number
+                      serviceCode:
+                        type: string
+                      addressTo:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      addressFrom:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                  deliveryDayEstimate:
+                    format: date-time
+                    type: string
+                  returnCreated:
+                    type: boolean
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          format: regex
+                          pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                          type: string
+                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                        quantity:
+                          type: number
+                        status:
+                          type: string
+                        name:
+                          type: string
+                        weight:
+                          type: number
+                        imageUrl:
+                          type: string
+                        weightUnit:
+                          type: string
+                        price:
+                          type: number
+                        productId:
+                          type: string
+                        sku:
+                          type: string
+                        asin:
+                          minLength: 1
+                          type: string
+                      required:
+                        - uuid
+                        - quantity
+                        - status
+                        - name
+                required:
+                  - uuid
+                  - updated
+                  - created
+                  - storeCreationDate
+                  - total
+                  - currency
+                  - customerName
+                  - items
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/{id}:
+    get:
+      operationId: getOrderById
+      summary: Get order by Id
+      tags:
+        - orders
+      description: Get order data using the order Id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - orders:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    format: regex
+                    pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
+                    type: string
+                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                  updated:
+                    format: date-time
+                    type: string
+                  created:
+                    format: date-time
+                    type: string
+                  status:
+                    enum:
+                      - pending
+                      - partially_fulfilled
+                      - fulfilled
+                      - error
+                      - refunded
+                      - exception
+                      - cancelled
+                      - generating_labels
+                      - externally_handled
+                      - in_transit
+                      - delivered
+                  storeOrderId:
+                    type: string
+                  storeInternalOrderId:
+                    type: string
+                  storeCreationDate:
+                    format: date-time
+                    type: string
+                  total:
+                    type: number
+                  subtotal:
+                    type: number
+                  tip:
+                    type: number
+                  shippingTotal:
+                    type: number
+                  currency:
+                    enum:
+                      - EUR
+                      - USD
+                      - GBP
+                  shippingMethod:
+                    type: string
+                  paymentMethod:
+                    type: string
+                  name:
+                    type: string
+                  customerName:
+                    type: string
+                  itemsCount:
+                    type: number
+                  firstItemImageUrl:
+                    type: string
+                  trackingInformation:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                        url:
+                          type: string
+                        status:
+                          enum:
+                            - P
+                            - T
+                            - D
+                            - E
+                            - F
+                            - R
+                            - U
+                      required:
+                        - number
+                  customerNote:
+                    type: string
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                      date:
+                        format: date-time
+                        type: string
+                    required:
+                      - message
+                  shippingInformation:
+                    type: object
+                    properties:
+                      parcels:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                            name:
+                              type: string
+                            parcelId:
+                              type: string
+                            monetaryValue:
+                              type: number
+                            currency:
+                              enum:
+                                - EUR
+                                - USD
+                                - GBP
+                            referenceNumber:
+                              type: string
+                            description:
+                              type: string
+                            width:
+                              type: number
+                            height:
+                              type: number
+                            length:
+                              type: number
+                            weight:
+                              type: number
+                            packagingWeight:
+                              type: number
+                            weightUnit:
+                              enum:
+                                - g
+                                - kg
+                                - oz
+                                - lb
+                            lengthUnit:
+                              enum:
+                                - cm
+                                - in
+                            isWeightDynamic:
+                              type: boolean
+                          required:
+                            - width
+                            - height
+                            - length
+                            - weight
+                            - weightUnit
+                            - lengthUnit
+                      shipmentDetails:
+                        type: object
+                        properties:
+                          description:
+                            type: string
+                          carrierNotes:
+                            type: string
+                          goodsMonetaryValue:
+                            type: number
+                          goodsCurrency:
+                            enum:
+                              - EUR
+                              - USD
+                              - GBP
+                          shipmentReferences:
+                            type: array
+                            items:
+                              type: string
+                      additionalServices:
+                        type: object
+                        properties:
+                          insurance:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          cod:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          saturdayDelivery:
+                            type: boolean
+                          signature:
+                            type: boolean
+                          adultSignature:
+                            type: boolean
+                      selectedCarrierId:
+                        type: number
+                      serviceCode:
+                        type: string
+                      addressTo:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      addressFrom:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                  deliveryDayEstimate:
+                    format: date-time
+                    type: string
+                  returnCreated:
+                    type: boolean
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          format: regex
+                          pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                          type: string
+                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                        quantity:
+                          type: number
+                        status:
+                          type: string
+                        name:
+                          type: string
+                        weight:
+                          type: number
+                        imageUrl:
+                          type: string
+                        weightUnit:
+                          type: string
+                        price:
+                          type: number
+                        productId:
+                          type: string
+                        sku:
+                          type: string
+                        asin:
+                          minLength: 1
+                          type: string
+                      required:
+                        - uuid
+                        - quantity
+                        - status
+                        - name
+                required:
+                  - uuid
+                  - updated
+                  - created
+                  - storeCreationDate
+                  - total
+                  - currency
+                  - customerName
+                  - items
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/:
+    post:
+      operationId: addOrder
+      summary: Add or update an order
+      tags:
+        - orders
+      description: Add a new order or update an existing one using storeOrderId as key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  enum:
+                    - pending
+                    - partially_fulfilled
+                    - fulfilled
+                    - error
+                    - refunded
+                    - exception
+                    - cancelled
+                    - generating_labels
+                    - externally_handled
+                    - in_transit
+                    - delivered
+                storeOrderId:
+                  type: string
+                storeInternalOrderId:
+                  type: string
+                storeCreationDate:
+                  format: date-time
+                  type: string
+                total:
+                  type: number
+                subtotal:
+                  type: number
+                tip:
+                  type: number
+                tax:
+                  type: number
+                shippingTotal:
+                  type: number
+                currency:
+                  enum:
+                    - EUR
+                    - USD
+                    - GBP
+                addressTo:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    companyName:
+                      type: string
+                    street:
+                      type: string
+                    street2:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      default: ''
+                      type: string
+                    countryIsoCode:
+                      maxLength: 2
+                      type: string
+                    zipCode:
+                      type: string
+                    phoneNumber:
+                      type: string
+                    email:
+                      format: email
+                      type: string
+                  required:
+                    - name
+                    - street
+                    - city
+                    - state
+                    - countryIsoCode
+                    - zipCode
+                shippingMethod:
+                  type: string
+                paymentMethod:
+                  type: string
+                cod:
+                  type: boolean
+                customerName:
+                  type: string
+                customerNote:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productId:
+                        type: string
+                      name:
+                        type: string
+                      quantity:
+                        type: number
+                      sku:
+                        type: string
+                      price:
+                        type: number
+                      imageUrl:
+                        type: string
+                      status:
+                        enum:
+                          - pending
+                          - partially_fulfilled
+                          - fulfilled
+                          - error
+                          - refunded
+                          - exception
+                          - cancelled
+                          - generating_labels
+                          - externally_handled
+                          - in_transit
+                          - delivered
+                      weight:
+                        type: number
+                      weightUnit:
+                        enum:
+                          - g
+                          - kg
+                          - oz
+                          - lb
+                    required:
+                      - name
+                      - quantity
+                      - status
+              required:
+                - status
+                - storeOrderId
+                - storeInternalOrderId
+                - storeCreationDate
+                - total
+                - shippingTotal
+                - currency
+                - shippingMethod
+                - paymentMethod
+                - customerName
+        required: true
+      security:
+        - oaAuth:
+            - orders:write
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    format: regex
+                    pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
+                    type: string
+                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                  updated:
+                    format: date-time
+                    type: string
+                  created:
+                    format: date-time
+                    type: string
+                  status:
+                    enum:
+                      - pending
+                      - partially_fulfilled
+                      - fulfilled
+                      - error
+                      - refunded
+                      - exception
+                      - cancelled
+                      - generating_labels
+                      - externally_handled
+                      - in_transit
+                      - delivered
+                  storeOrderId:
+                    type: string
+                  storeInternalOrderId:
+                    type: string
+                  storeCreationDate:
+                    format: date-time
+                    type: string
+                  total:
+                    type: number
+                  subtotal:
+                    type: number
+                  tip:
+                    type: number
+                  shippingTotal:
+                    type: number
+                  currency:
+                    enum:
+                      - EUR
+                      - USD
+                      - GBP
+                  shippingMethod:
+                    type: string
+                  paymentMethod:
+                    type: string
+                  name:
+                    type: string
+                  customerName:
+                    type: string
+                  itemsCount:
+                    type: number
+                  firstItemImageUrl:
+                    type: string
+                  trackingInformation:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                        url:
+                          type: string
+                        status:
+                          enum:
+                            - P
+                            - T
+                            - D
+                            - E
+                            - F
+                            - R
+                            - U
+                      required:
+                        - number
+                  customerNote:
+                    type: string
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                      date:
+                        format: date-time
+                        type: string
+                    required:
+                      - message
+                  shippingInformation:
+                    type: object
+                    properties:
+                      parcels:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                            name:
+                              type: string
+                            parcelId:
+                              type: string
+                            monetaryValue:
+                              type: number
+                            currency:
+                              enum:
+                                - EUR
+                                - USD
+                                - GBP
+                            referenceNumber:
+                              type: string
+                            description:
+                              type: string
+                            width:
+                              type: number
+                            height:
+                              type: number
+                            length:
+                              type: number
+                            weight:
+                              type: number
+                            packagingWeight:
+                              type: number
+                            weightUnit:
+                              enum:
+                                - g
+                                - kg
+                                - oz
+                                - lb
+                            lengthUnit:
+                              enum:
+                                - cm
+                                - in
+                            isWeightDynamic:
+                              type: boolean
+                          required:
+                            - width
+                            - height
+                            - length
+                            - weight
+                            - weightUnit
+                            - lengthUnit
+                      shipmentDetails:
+                        type: object
+                        properties:
+                          description:
+                            type: string
+                          carrierNotes:
+                            type: string
+                          goodsMonetaryValue:
+                            type: number
+                          goodsCurrency:
+                            enum:
+                              - EUR
+                              - USD
+                              - GBP
+                          shipmentReferences:
+                            type: array
+                            items:
+                              type: string
+                      additionalServices:
+                        type: object
+                        properties:
+                          insurance:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          cod:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          saturdayDelivery:
+                            type: boolean
+                          signature:
+                            type: boolean
+                          adultSignature:
+                            type: boolean
+                      selectedCarrierId:
+                        type: number
+                      serviceCode:
+                        type: string
+                      addressTo:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      addressFrom:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                  deliveryDayEstimate:
+                    format: date-time
+                    type: string
+                  returnCreated:
+                    type: boolean
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          format: regex
+                          pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                          type: string
+                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                        quantity:
+                          type: number
+                        status:
+                          type: string
+                        name:
+                          type: string
+                        weight:
+                          type: number
+                        imageUrl:
+                          type: string
+                        weightUnit:
+                          type: string
+                        price:
+                          type: number
+                        productId:
+                          type: string
+                        sku:
+                          type: string
+                        asin:
+                          minLength: 1
+                          type: string
+                      required:
+                        - uuid
+                        - quantity
+                        - status
+                        - name
+                required:
+                  - uuid
+                  - updated
+                  - created
+                  - storeCreationDate
+                  - total
+                  - currency
+                  - customerName
+                  - items
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/{storeOrderId}/carrier:
+    post:
+      operationId: setShippingCarrierForOrder
+      summary: Set shipping carrier for order
+      tags:
+        - orders
+      description: Set shipping carrier and relative service for order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                carrierId:
+                  type: number
+                serviceCode:
+                  type: string
+              required:
+                - carrierId
+                - serviceCode
+        required: true
+      parameters:
+        - in: path
+          name: storeOrderId
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - orders:write
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    format: regex
+                    pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
+                    type: string
+                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                  updated:
+                    format: date-time
+                    type: string
+                  created:
+                    format: date-time
+                    type: string
+                  status:
+                    enum:
+                      - pending
+                      - partially_fulfilled
+                      - fulfilled
+                      - error
+                      - refunded
+                      - exception
+                      - cancelled
+                      - generating_labels
+                      - externally_handled
+                      - in_transit
+                      - delivered
+                  storeOrderId:
+                    type: string
+                  storeInternalOrderId:
+                    type: string
+                  storeCreationDate:
+                    format: date-time
+                    type: string
+                  total:
+                    type: number
+                  subtotal:
+                    type: number
+                  tip:
+                    type: number
+                  shippingTotal:
+                    type: number
+                  currency:
+                    enum:
+                      - EUR
+                      - USD
+                      - GBP
+                  shippingMethod:
+                    type: string
+                  paymentMethod:
+                    type: string
+                  name:
+                    type: string
+                  customerName:
+                    type: string
+                  itemsCount:
+                    type: number
+                  firstItemImageUrl:
+                    type: string
+                  trackingInformation:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                        url:
+                          type: string
+                        status:
+                          enum:
+                            - P
+                            - T
+                            - D
+                            - E
+                            - F
+                            - R
+                            - U
+                      required:
+                        - number
+                  customerNote:
+                    type: string
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                      date:
+                        format: date-time
+                        type: string
+                    required:
+                      - message
+                  shippingInformation:
+                    type: object
+                    properties:
+                      parcels:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                            name:
+                              type: string
+                            parcelId:
+                              type: string
+                            monetaryValue:
+                              type: number
+                            currency:
+                              enum:
+                                - EUR
+                                - USD
+                                - GBP
+                            referenceNumber:
+                              type: string
+                            description:
+                              type: string
+                            width:
+                              type: number
+                            height:
+                              type: number
+                            length:
+                              type: number
+                            weight:
+                              type: number
+                            packagingWeight:
+                              type: number
+                            weightUnit:
+                              enum:
+                                - g
+                                - kg
+                                - oz
+                                - lb
+                            lengthUnit:
+                              enum:
+                                - cm
+                                - in
+                            isWeightDynamic:
+                              type: boolean
+                          required:
+                            - width
+                            - height
+                            - length
+                            - weight
+                            - weightUnit
+                            - lengthUnit
+                      shipmentDetails:
+                        type: object
+                        properties:
+                          description:
+                            type: string
+                          carrierNotes:
+                            type: string
+                          goodsMonetaryValue:
+                            type: number
+                          goodsCurrency:
+                            enum:
+                              - EUR
+                              - USD
+                              - GBP
+                          shipmentReferences:
+                            type: array
+                            items:
+                              type: string
+                      additionalServices:
+                        type: object
+                        properties:
+                          insurance:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          cod:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          saturdayDelivery:
+                            type: boolean
+                          signature:
+                            type: boolean
+                          adultSignature:
+                            type: boolean
+                      selectedCarrierId:
+                        type: number
+                      serviceCode:
+                        type: string
+                      addressTo:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      addressFrom:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                  deliveryDayEstimate:
+                    format: date-time
+                    type: string
+                  returnCreated:
+                    type: boolean
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          format: regex
+                          pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                          type: string
+                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                        quantity:
+                          type: number
+                        status:
+                          type: string
+                        name:
+                          type: string
+                        weight:
+                          type: number
+                        imageUrl:
+                          type: string
+                        weightUnit:
+                          type: string
+                        price:
+                          type: number
+                        productId:
+                          type: string
+                        sku:
+                          type: string
+                        asin:
+                          minLength: 1
+                          type: string
+                      required:
+                        - uuid
+                        - quantity
+                        - status
+                        - name
+                required:
+                  - uuid
+                  - updated
+                  - created
+                  - storeCreationDate
+                  - total
+                  - currency
+                  - customerName
+                  - items
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/{storeOrderId}/parcels:
+    post:
+      operationId: addShippingParcelsToOrder
+      summary: Add shipping parcels to order
+      tags:
+        - orders
+      description: >-
+        Add shipping parcels to order, using id of a pre loaded parcel or using
+        raw data of a parcel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                anyOf:
+                  - type: object
+                    properties:
+                      parcelId:
+                        type: number
+                    required:
+                      - parcelId
+                  - type: object
+                    properties:
+                      width:
+                        type: number
+                      height:
+                        type: number
+                      length:
+                        type: number
+                      weight:
+                        type: number
+                      packagingWeight:
+                        type: number
+                      weightUnit:
+                        enum:
+                          - g
+                          - kg
+                          - oz
+                          - lb
+                      lengthUnit:
+                        enum:
+                          - cm
+                          - in
+                      isWeightDynamic:
+                        type: boolean
+                    required:
+                      - width
+                      - height
+                      - length
+                      - weight
+                      - weightUnit
+                      - lengthUnit
+      parameters:
+        - in: path
+          name: storeOrderId
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - orders:write
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    format: regex
+                    pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
+                    type: string
+                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                  updated:
+                    format: date-time
+                    type: string
+                  created:
+                    format: date-time
+                    type: string
+                  status:
+                    enum:
+                      - pending
+                      - partially_fulfilled
+                      - fulfilled
+                      - error
+                      - refunded
+                      - exception
+                      - cancelled
+                      - generating_labels
+                      - externally_handled
+                      - in_transit
+                      - delivered
+                  storeOrderId:
+                    type: string
+                  storeInternalOrderId:
+                    type: string
+                  storeCreationDate:
+                    format: date-time
+                    type: string
+                  total:
+                    type: number
+                  subtotal:
+                    type: number
+                  tip:
+                    type: number
+                  shippingTotal:
+                    type: number
+                  currency:
+                    enum:
+                      - EUR
+                      - USD
+                      - GBP
+                  shippingMethod:
+                    type: string
+                  paymentMethod:
+                    type: string
+                  name:
+                    type: string
+                  customerName:
+                    type: string
+                  itemsCount:
+                    type: number
+                  firstItemImageUrl:
+                    type: string
+                  trackingInformation:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                        url:
+                          type: string
+                        status:
+                          enum:
+                            - P
+                            - T
+                            - D
+                            - E
+                            - F
+                            - R
+                            - U
+                      required:
+                        - number
+                  customerNote:
+                    type: string
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                      date:
+                        format: date-time
+                        type: string
+                    required:
+                      - message
+                  shippingInformation:
+                    type: object
+                    properties:
+                      parcels:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                            name:
+                              type: string
+                            parcelId:
+                              type: string
+                            monetaryValue:
+                              type: number
+                            currency:
+                              enum:
+                                - EUR
+                                - USD
+                                - GBP
+                            referenceNumber:
+                              type: string
+                            description:
+                              type: string
+                            width:
+                              type: number
+                            height:
+                              type: number
+                            length:
+                              type: number
+                            weight:
+                              type: number
+                            packagingWeight:
+                              type: number
+                            weightUnit:
+                              enum:
+                                - g
+                                - kg
+                                - oz
+                                - lb
+                            lengthUnit:
+                              enum:
+                                - cm
+                                - in
+                            isWeightDynamic:
+                              type: boolean
+                          required:
+                            - width
+                            - height
+                            - length
+                            - weight
+                            - weightUnit
+                            - lengthUnit
+                      shipmentDetails:
+                        type: object
+                        properties:
+                          description:
+                            type: string
+                          carrierNotes:
+                            type: string
+                          goodsMonetaryValue:
+                            type: number
+                          goodsCurrency:
+                            enum:
+                              - EUR
+                              - USD
+                              - GBP
+                          shipmentReferences:
+                            type: array
+                            items:
+                              type: string
+                      additionalServices:
+                        type: object
+                        properties:
+                          insurance:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          cod:
+                            type: object
+                            properties:
+                              monetaryValue:
+                                type: number
+                              currency:
+                                enum:
+                                  - EUR
+                                  - USD
+                                  - GBP
+                            required:
+                              - monetaryValue
+                              - currency
+                          saturdayDelivery:
+                            type: boolean
+                          signature:
+                            type: boolean
+                          adultSignature:
+                            type: boolean
+                      selectedCarrierId:
+                        type: number
+                      serviceCode:
+                        type: string
+                      addressTo:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      addressFrom:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ''
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - street
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                  deliveryDayEstimate:
+                    format: date-time
+                    type: string
+                  returnCreated:
+                    type: boolean
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          format: regex
+                          pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                          type: string
+                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                        quantity:
+                          type: number
+                        status:
+                          type: string
+                        name:
+                          type: string
+                        weight:
+                          type: number
+                        imageUrl:
+                          type: string
+                        weightUnit:
+                          type: string
+                        price:
+                          type: number
+                        productId:
+                          type: string
+                        sku:
+                          type: string
+                        asin:
+                          minLength: 1
+                          type: string
+                      required:
+                        - uuid
+                        - quantity
+                        - status
+                        - name
+                required:
+                  - uuid
+                  - updated
+                  - created
+                  - storeCreationDate
+                  - total
+                  - currency
+                  - customerName
+                  - items
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/{storeOrderId}/rate/{carrierId}:
+    get:
+      operationId: getShippingRate
+      summary: Get shipping rate
+      tags:
+        - shipments
+      description: Get shipping rate for order using selected carrier id
+      parameters:
+        - in: path
+          name: storeOrderId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: carrierId
+          required: true
+          schema:
+            type: number
+      security:
+        - oaAuth:
+            - shipments:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  price:
+                    type: number
+                  currency:
+                    enum:
+                      - EUR
+                      - USD
+                      - GBP
+                  serviceCode:
+                    type: string
+                  serviceName:
+                    type: string
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/ship:
+    post:
+      operationId: shipOrder
+      summary: Ship order
+      tags:
+        - shipments
+      description: Ship order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      security:
+        - oaAuth:
+            - shipments:write
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/shipment/{uuid}:
+    delete:
+      operationId: deleteShipment
+      summary: Delete a shipment
+      tags:
+        - shipments
+      description: Delete a shipment using shipment id
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - shipments:write
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      operationId: getShipment
+      summary: Get a data shipment
+      tags:
+        - shipments
+      description: Get a shipment data using shipment id
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - shipments:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    format: regex
+                    pattern: ^req-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                    type: string
+                    example: req-0f65bfef-f9ec-4e56-8bf3-3a4ad41beec3
+                  created:
+                    format: date-time
+                    type: string
+                  addressFrom:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      companyName:
+                        type: string
+                      street:
+                        type: string
+                      street2:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        default: ''
+                        type: string
+                      countryIsoCode:
+                        maxLength: 2
+                        type: string
+                      zipCode:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      email:
+                        format: email
+                        type: string
+                    required:
+                      - name
+                      - street
+                      - city
+                      - state
+                      - countryIsoCode
+                      - zipCode
+                    deprecated: true
+                  addressTo:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      companyName:
+                        type: string
+                      street:
+                        type: string
+                      street2:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        default: ''
+                        type: string
+                      countryIsoCode:
+                        maxLength: 2
+                        type: string
+                      zipCode:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      email:
+                        format: email
+                        type: string
+                    required:
+                      - name
+                      - street
+                      - city
+                      - state
+                      - countryIsoCode
+                      - zipCode
+                    deprecated: true
+                  addressReturn:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      companyName:
+                        type: string
+                      street:
+                        type: string
+                      street2:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        default: ''
+                        type: string
+                      countryIsoCode:
+                        maxLength: 2
+                        type: string
+                      zipCode:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      email:
+                        format: email
+                        type: string
+                    required:
+                      - name
+                      - street
+                      - city
+                      - state
+                      - countryIsoCode
+                      - zipCode
+                  alphanumericRef:
+                    type: string
+                  status:
+                    enum:
+                      - shipped
+                      - to_ship
+                      - error
+                      - deleted
+                  pickedUp:
+                    default: false
+                    type: boolean
+                  pickUpRef:
+                    type: string
+                  pickUpId:
+                    format: uuid
+                    type: string
+                  trackingStatus:
+                    enum:
+                      - P
+                      - T
+                      - D
+                      - E
+                      - F
+                      - R
+                      - U
+                  parcels:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          format: regex
+                          pattern: ^res-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                          type: string
+                          example: res-121c15b4-b7cc-4cf0-8583-d92d8bc0217c
+                        created:
+                          format: date-time
+                          type: string
+                        labelUrl:
+                          type: string
+                        labelType:
+                          type: string
+                        labelFormat:
+                          type: string
+                        trackingNumber:
+                          type: string
+                        trackingUrl:
+                          type: string
+                        shipmentRef:
+                          type: string
+                        returnLabel:
+                          type: object
+                          properties:
+                            labelUrl:
+                              type: string
+                            labelType:
+                              type: string
+                            labelFormat:
+                              type: string
+                            trackingNumber:
+                              type: string
+                          required:
+                            - labelUrl
+                            - labelType
+                            - trackingNumber
+                        documents:
+                          type: object
+                          properties:
+                            waybill:
+                              type: string
+                            shipmentReceipt:
+                              type: string
+                        extra: {}
+                      required:
+                        - uuid
+                        - created
+                        - labelUrl
+                        - labelType
+                        - trackingNumber
+                  extra: {}
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                    required:
+                      - message
+                required:
+                  - uuid
+                  - created
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/{storeOrderId}/shipment:
+    get:
+      operationId: getShipmentByStoreOrderId
+      summary: Get a shipment data using
+      tags:
+        - shipments
+      description: Get a shipment data using store order id
+      parameters:
+        - in: path
+          name: storeOrderId
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - shipments:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    format: regex
+                    pattern: ^req-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                    type: string
+                    example: req-0f65bfef-f9ec-4e56-8bf3-3a4ad41beec3
+                  created:
+                    format: date-time
+                    type: string
+                  addressFrom:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      companyName:
+                        type: string
+                      street:
+                        type: string
+                      street2:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        default: ''
+                        type: string
+                      countryIsoCode:
+                        maxLength: 2
+                        type: string
+                      zipCode:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      email:
+                        format: email
+                        type: string
+                    required:
+                      - name
+                      - street
+                      - city
+                      - state
+                      - countryIsoCode
+                      - zipCode
+                    deprecated: true
+                  addressTo:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      companyName:
+                        type: string
+                      street:
+                        type: string
+                      street2:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        default: ''
+                        type: string
+                      countryIsoCode:
+                        maxLength: 2
+                        type: string
+                      zipCode:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      email:
+                        format: email
+                        type: string
+                    required:
+                      - name
+                      - street
+                      - city
+                      - state
+                      - countryIsoCode
+                      - zipCode
+                    deprecated: true
+                  addressReturn:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      companyName:
+                        type: string
+                      street:
+                        type: string
+                      street2:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        default: ''
+                        type: string
+                      countryIsoCode:
+                        maxLength: 2
+                        type: string
+                      zipCode:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      email:
+                        format: email
+                        type: string
+                    required:
+                      - name
+                      - street
+                      - city
+                      - state
+                      - countryIsoCode
+                      - zipCode
+                  alphanumericRef:
+                    type: string
+                  status:
+                    enum:
+                      - shipped
+                      - to_ship
+                      - error
+                      - deleted
+                  pickedUp:
+                    default: false
+                    type: boolean
+                  pickUpRef:
+                    type: string
+                  pickUpId:
+                    format: uuid
+                    type: string
+                  trackingStatus:
+                    enum:
+                      - P
+                      - T
+                      - D
+                      - E
+                      - F
+                      - R
+                      - U
+                  parcels:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          format: regex
+                          pattern: ^res-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
+                          type: string
+                          example: res-121c15b4-b7cc-4cf0-8583-d92d8bc0217c
+                        created:
+                          format: date-time
+                          type: string
+                        labelUrl:
+                          type: string
+                        labelType:
+                          type: string
+                        labelFormat:
+                          type: string
+                        trackingNumber:
+                          type: string
+                        trackingUrl:
+                          type: string
+                        shipmentRef:
+                          type: string
+                        returnLabel:
+                          type: object
+                          properties:
+                            labelUrl:
+                              type: string
+                            labelType:
+                              type: string
+                            labelFormat:
+                              type: string
+                            trackingNumber:
+                              type: string
+                          required:
+                            - labelUrl
+                            - labelType
+                            - trackingNumber
+                        documents:
+                          type: object
+                          properties:
+                            waybill:
+                              type: string
+                            shipmentReceipt:
+                              type: string
+                        extra: {}
+                      required:
+                        - uuid
+                        - created
+                        - labelUrl
+                        - labelType
+                        - trackingNumber
+                  extra: {}
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                    required:
+                      - message
+                required:
+                  - uuid
+                  - created
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      operationId: deleteShipmentByStoreOrderId
+      summary: Delete a shipment
+      tags:
+        - shipments
+      description: Delete a shipment using store order id
+      parameters:
+        - in: path
+          name: storeOrderId
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - shipments:write
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/orders/{storeOrderId}/tracking:
+    get:
+      operationId: getShipmentTracking
+      summary: Get shipment tracking
+      tags:
+        - orders
+        - shipment
+      description: Get shipment tracking data using the order Id
+      parameters:
+        - in: path
+          name: storeOrderId
+          required: true
+          schema:
+            type: string
+      security:
+        - oaAuth:
+            - orders:read
+            - shipment:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                  created:
+                    format: date-time
+                    type: string
+                  status:
+                    enum:
+                      - P
+                      - T
+                      - D
+                      - E
+                      - F
+                      - R
+                      - U
+                  trackingNumber:
+                    type: string
+                  trackingUrl:
+                    type: string
+                  delivered:
+                    default: false
+                    type: boolean
+                  shipmentRef:
+                    type: string
+                  pod:
+                    type: boolean
+                  external:
+                    type: boolean
+                  error:
+                    type: object
+                    properties:
+                      message: {}
+                      code:
+                        type: string
+                      i18nCode:
+                        type: string
+                    required:
+                      - message
+                  steps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                        status:
+                          enum:
+                            - P
+                            - T
+                            - D
+                            - E
+                            - F
+                            - R
+                            - U
+                        description:
+                          type: string
+                        datetime:
+                          type: string
+                        timestamp:
+                          format: date-time
+                          type: string
+                        timezone:
+                          type: string
+                        location:
+                          type: string
+                        podUrl:
+                          type: string
+                        error:
+                          type: object
+                          properties:
+                            message: {}
+                            code:
+                              type: string
+                            i18nCode:
+                              type: string
+                          required:
+                            - message
+                      required:
+                        - uuid
+                        - status
+                        - description
+                        - datetime
+                required:
+                  - uuid
+                  - created
+                  - status
+                  - trackingNumber
+                  - trackingUrl
+                  - delivered
+                  - steps
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /v1/packages/:
+    get:
+      operationId: getShippingParcels
+      summary: Get shipping parcels
+      tags:
+        - parcels
+      description: Get available shipping parcels for the current company
+      security:
+        - oaAuth:
+            - parcels:read
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    width:
+                      type: number
+                    height:
+                      type: number
+                    length:
+                      type: number
+                    weight:
+                      type: number
+                    packagingWeight:
+                      type: number
+                    weightUnit:
+                      enum:
+                        - g
+                        - kg
+                        - oz
+                        - lb
+                    lengthUnit:
+                      enum:
+                        - cm
+                        - in
+                    isWeightDynamic:
+                      type: boolean
+                  required:
+                    - id
+                    - width
+                    - height
+                    - length
+                    - weight
+                    - weightUnit
+                    - lengthUnit
+        '429':
+          description: Default Response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: number
+                example: 300
+            X-RateLimit-Reset:
+              schema:
+                type: number
+                example: 60
+            Retry-After:
+              schema:
+                type: number
+                example: 60000
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+servers:
+  - url: https://api.isendu.dev/
