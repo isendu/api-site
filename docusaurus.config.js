@@ -1,55 +1,47 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const lightCodeTheme = require("prism-react-renderer/themes/github");
+const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Isendu API',
-  tagline: 'Isendu are cool',
-  url: 'https://www.isendu.com',
-  baseUrl: '/',
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  title: "Isendu API",
+  tagline: "Isendu are cool",
+  url: "https://www.isendu.com",
+  baseUrl: "/",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
+  favicon: "img/favicon.ico",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'isendu', // Usually your GitHub org/user name.
-  projectName: 'api-store', // Usually your repo name.
+  organizationName: "isendu", // Usually your GitHub org/user name.
+  projectName: "api-store", // Usually your repo name.
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
   i18n: {
-    defaultLocale: 'it',
-    locales: ['it'],
+    defaultLocale: "it",
+    locales: ["it"],
   },
 
   presets: [
     [
-      'classic',
+      "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: "https://github.com/isendu/api-site",
           docLayoutComponent: "@theme/DocPage",
-          docItemComponent: "@theme/ApiItem" // Derived from docusaurus-theme-openapi-docs
-        },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          docItemComponent: "@theme/ApiItem", // Derived from docusaurus-theme-openapi-docs
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: require.resolve("./src/css/custom.css"),
         },
       }),
     ],
@@ -64,70 +56,28 @@ const config = {
         },
       },
       navbar: {
-        title: 'My Site',
         logo: {
-          alt: 'My Site Logo',
-          src: 'img/logo.svg',
+          alt: "Isendu",
+          src: "https://isendu-cdn-static-files.s3.eu-central-1.amazonaws.com/new_logo/isu_logo.svg",
+          style: { background: "white", padding: "8px", borderRadius: "8px" },
         },
         items: [
           {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: 'Reference',
+            to: "/docs/api/store-api",
+            position: "left",
+            label: "Store API",
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://github.com/facebook/docusaurus',
-            label: 'GitHub',
-            position: 'right',
+            href: "https://github.com/isendu/api-site",
+            label: "GitHub",
+            position: "right",
           },
         ],
       },
       footer: {
-        style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Reference',
-                to: '/docs/intro',
-              },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
-              },
-            ],
-          },
-        ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        style: "dark",
+        links: [{ label: "isendu.com", href: "https://www.isendu.com" }],
+        copyright: `Copyright © ${new Date().getFullYear()} isendu API, Inc. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
@@ -135,27 +85,28 @@ const config = {
       },
     }),
 
-    plugins: [
-      [
-        'docusaurus-plugin-openapi-docs',
-        {
-          id: "openapi",
-          docsPluginId: "classic",
-          config: {
-            store: { // Note: petstore key is treated as the <id> and can be used to specify an API doc instance when using CLI commands
-              specPath: "definitions/store.yaml", // Path to designated spec file
-              outputDir: "docs/store", // Output directory for generated .mdx docs
-              sidebarOptions: {
-                groupPathsBy: "tag",
-                categoryLinkSource: "tag",
-              },
+  plugins: [
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "openapi",
+        docsPluginId: "classic",
+        config: {
+          store: {
+            // Note: petstore key is treated as the <id> and can be used to specify an API doc instance when using CLI commands
+            specPath: "definitions/store.yaml", // Path to designated spec file
+            outputDir: "docs/store", // Output directory for generated .mdx docs
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
             },
-          }
+          },
         },
-      ]
+      },
     ],
+  ],
 
-    themes: ["docusaurus-theme-openapi-docs"]
+  themes: ["docusaurus-theme-openapi-docs"],
 };
 
 module.exports = config;
