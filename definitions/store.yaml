@@ -1,43 +1,45 @@
 openapi: 3.0.3
 info:
-  title: OpenApi api-store documentation
-  description: OpenApi api-store documentation
+  title: OpenApi Schema for isendu API
+  description: isendu API available for all customers
   version: 1.0.0
-  basePath: /api-store
 components:
   securitySchemes:
     oaAuth:
       type: oauth2
       flows:
         clientCredentials:
-          description: OAuth2 client credentials flow must be a Json Post
           tokenUrl: /api-store/oauth/token
           scopes:
-            write:order: Create/delete/update order
-            read:order: Read order
-            write:shipment: Create/delete shipment
-            read:shipment: Read shipment
-            read:tracking: Get tracking
-            read:carriers: Get carriers
-            read:parcels: Get parcels
+            order:write: Create/delete/update order
+            order:read: Read order
+            shipment:write: Create/delete shipment
+            shipment:read: Read shipment
+            tracking:read: Get tracking
+            carriers:read: Get carriers
+            parcels:read: Get parcels
     bearerS2SAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    apiKey:
+      type: apiKey
+      name: x-api-key
+      in: header
   schemas: {}
 paths:
-  /v1/carriers/:
+  /api-store/v1/carriers/:
     get:
       operationId: getShippingCarriers
       summary: Get shipping carriers
       tags:
-        - carriers
+        - api-store
       description: Get available shipping carriers for the current company
       security:
         - oaAuth:
             - carriers:read
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
@@ -57,29 +59,25 @@ paths:
                     services:
                       type: array
                       items:
-                        type: string
-                    isIsenduCarrier:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                          - code
+                          - name
+                    hasPudo:
+                      default: false
                       type: boolean
                   required:
                     - id
                     - carrierName
                     - internalCode
                     - services
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -87,35 +85,37 @@ paths:
                 properties:
                   error:
                     type: string
-  /v1/orders/isu/{uuid}:
+  "/api-store/v1/orders/isu/{uuid}":
     get:
       operationId: getOrderByIsuId
       summary: Get order by Isendu Id
       tags:
-        - orders
+        - api-store
       description: Get order data using the Isendu order Id
       parameters:
-        - in: path
+        - schema:
+            type: string
+          in: path
           name: uuid
           required: true
-          schema:
-            type: string
       security:
         - oaAuth:
             - orders:read
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
               schema:
+                additionalProperties: false
                 type: object
                 properties:
                   uuid:
                     format: regex
                     pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
                     type: string
-                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                    examples:
+                      - o-55f5f424-715d-4818-a1d7-deaae095f136
                   updated:
                     format: date-time
                     type: string
@@ -146,22 +146,19 @@ paths:
                     type: number
                   subtotal:
                     type: number
-                  tip:
-                    type: number
                   shippingTotal:
                     type: number
                   currency:
-                    enum:
+                    examples:
                       - EUR
                       - USD
                       - GBP
+                    minLength: 3
+                    maxLength: 3
+                    type: string
                   shippingMethod:
                     type: string
                   paymentMethod:
-                    type: string
-                  name:
-                    type: string
-                  customerName:
                     type: string
                   itemsCount:
                     type: number
@@ -170,6 +167,7 @@ paths:
                   trackingInformation:
                     type: array
                     items:
+                      additionalProperties: false
                       type: object
                       properties:
                         number:
@@ -200,14 +198,14 @@ paths:
                       date:
                         format: date-time
                         type: string
-                    required:
-                      - message
                   shippingInformation:
+                    additionalProperties: false
                     type: object
                     properties:
                       parcels:
                         type: array
                         items:
+                          additionalProperties: false
                           type: object
                           properties:
                             uuid:
@@ -219,10 +217,13 @@ paths:
                             monetaryValue:
                               type: number
                             currency:
-                              enum:
+                              examples:
                                 - EUR
                                 - USD
                                 - GBP
+                              minLength: 3
+                              maxLength: 3
+                              type: string
                             referenceNumber:
                               type: string
                             description:
@@ -259,22 +260,24 @@ paths:
                       shipmentDetails:
                         type: object
                         properties:
-                          description:
-                            type: string
                           carrierNotes:
                             type: string
                           goodsMonetaryValue:
                             type: number
                           goodsCurrency:
-                            enum:
+                            examples:
                               - EUR
                               - USD
                               - GBP
+                            minLength: 3
+                            maxLength: 3
+                            type: string
                           shipmentReferences:
                             type: array
                             items:
                               type: string
                       additionalServices:
+                        additionalProperties: false
                         type: object
                         properties:
                           insurance:
@@ -283,10 +286,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -296,10 +302,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -327,7 +336,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -360,7 +369,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -379,11 +388,43 @@ paths:
                           - state
                           - countryIsoCode
                           - zipCode
+                      addressDelivery:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ""
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      pudoId:
+                        type: string
                   deliveryDayEstimate:
                     format: date-time
                     type: string
-                  returnCreated:
-                    type: boolean
                   items:
                     type: array
                     items:
@@ -393,11 +434,10 @@ paths:
                           format: regex
                           pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
                           type: string
-                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                          examples:
+                            - i-e601fbc7-d527-4eb0-a9cb-81c0678ef73e
                         quantity:
                           type: number
-                        status:
-                          type: string
                         name:
                           type: string
                         weight:
@@ -418,7 +458,6 @@ paths:
                       required:
                         - uuid
                         - quantity
-                        - status
                         - name
                 required:
                   - uuid
@@ -427,23 +466,9 @@ paths:
                   - storeCreationDate
                   - total
                   - currency
-                  - customerName
                   - items
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -451,35 +476,37 @@ paths:
                 properties:
                   error:
                     type: string
-  /v1/orders/{id}:
+  "/api-store/v1/orders/{id}":
     get:
       operationId: getOrderById
       summary: Get order by Id
       tags:
-        - orders
+        - api-store
       description: Get order data using the order Id
       parameters:
-        - in: path
+        - schema:
+            type: string
+          in: path
           name: id
           required: true
-          schema:
-            type: string
       security:
         - oaAuth:
             - orders:read
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
               schema:
+                additionalProperties: false
                 type: object
                 properties:
                   uuid:
                     format: regex
                     pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
                     type: string
-                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                    examples:
+                      - o-55f5f424-715d-4818-a1d7-deaae095f136
                   updated:
                     format: date-time
                     type: string
@@ -510,22 +537,19 @@ paths:
                     type: number
                   subtotal:
                     type: number
-                  tip:
-                    type: number
                   shippingTotal:
                     type: number
                   currency:
-                    enum:
+                    examples:
                       - EUR
                       - USD
                       - GBP
+                    minLength: 3
+                    maxLength: 3
+                    type: string
                   shippingMethod:
                     type: string
                   paymentMethod:
-                    type: string
-                  name:
-                    type: string
-                  customerName:
                     type: string
                   itemsCount:
                     type: number
@@ -534,6 +558,7 @@ paths:
                   trackingInformation:
                     type: array
                     items:
+                      additionalProperties: false
                       type: object
                       properties:
                         number:
@@ -564,14 +589,14 @@ paths:
                       date:
                         format: date-time
                         type: string
-                    required:
-                      - message
                   shippingInformation:
+                    additionalProperties: false
                     type: object
                     properties:
                       parcels:
                         type: array
                         items:
+                          additionalProperties: false
                           type: object
                           properties:
                             uuid:
@@ -583,10 +608,13 @@ paths:
                             monetaryValue:
                               type: number
                             currency:
-                              enum:
+                              examples:
                                 - EUR
                                 - USD
                                 - GBP
+                              minLength: 3
+                              maxLength: 3
+                              type: string
                             referenceNumber:
                               type: string
                             description:
@@ -623,22 +651,24 @@ paths:
                       shipmentDetails:
                         type: object
                         properties:
-                          description:
-                            type: string
                           carrierNotes:
                             type: string
                           goodsMonetaryValue:
                             type: number
                           goodsCurrency:
-                            enum:
+                            examples:
                               - EUR
                               - USD
                               - GBP
+                            minLength: 3
+                            maxLength: 3
+                            type: string
                           shipmentReferences:
                             type: array
                             items:
                               type: string
                       additionalServices:
+                        additionalProperties: false
                         type: object
                         properties:
                           insurance:
@@ -647,10 +677,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -660,10 +693,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -691,7 +727,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -724,7 +760,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -743,11 +779,43 @@ paths:
                           - state
                           - countryIsoCode
                           - zipCode
+                      addressDelivery:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ""
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      pudoId:
+                        type: string
                   deliveryDayEstimate:
                     format: date-time
                     type: string
-                  returnCreated:
-                    type: boolean
                   items:
                     type: array
                     items:
@@ -757,11 +825,10 @@ paths:
                           format: regex
                           pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
                           type: string
-                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                          examples:
+                            - i-e601fbc7-d527-4eb0-a9cb-81c0678ef73e
                         quantity:
                           type: number
-                        status:
-                          type: string
                         name:
                           type: string
                         weight:
@@ -782,7 +849,6 @@ paths:
                       required:
                         - uuid
                         - quantity
-                        - status
                         - name
                 required:
                   - uuid
@@ -791,23 +857,9 @@ paths:
                   - storeCreationDate
                   - total
                   - currency
-                  - customerName
                   - items
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -815,17 +867,18 @@ paths:
                 properties:
                   error:
                     type: string
-  /v1/orders/:
+  /api-store/v1/orders/:
     post:
       operationId: addOrder
       summary: Add or update an order
       tags:
-        - orders
+        - api-store
       description: Add a new order or update an existing one using storeOrderId as key
       requestBody:
         content:
           application/json:
             schema:
+              additionalProperties: false
               type: object
               properties:
                 status:
@@ -859,10 +912,13 @@ paths:
                 shippingTotal:
                   type: number
                 currency:
-                  enum:
+                  examples:
                     - EUR
                     - USD
                     - GBP
+                  minLength: 3
+                  maxLength: 3
+                  type: string
                 addressTo:
                   type: object
                   properties:
@@ -877,7 +933,7 @@ paths:
                     city:
                       type: string
                     state:
-                      default: ''
+                      default: ""
                       type: string
                     countryIsoCode:
                       maxLength: 2
@@ -896,19 +952,62 @@ paths:
                     - state
                     - countryIsoCode
                     - zipCode
+                addressDelivery:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    companyName:
+                      type: string
+                    street:
+                      type: string
+                    street2:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      default: ""
+                      type: string
+                    countryIsoCode:
+                      maxLength: 2
+                      type: string
+                    zipCode:
+                      type: string
+                    phoneNumber:
+                      type: string
+                    email:
+                      format: email
+                      type: string
+                  required:
+                    - name
+                    - city
+                    - state
+                    - countryIsoCode
+                    - zipCode
+                pudoId:
+                  type: string
+                shippingCarrier:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    service:
+                      type: string
+                  required:
+                    - id
+                    - service
                 shippingMethod:
                   type: string
                 paymentMethod:
                   type: string
                 cod:
                   type: boolean
-                customerName:
-                  type: string
                 customerNote:
                   type: string
                 items:
                   type: array
                   items:
+                    additionalProperties: false
                     type: object
                     properties:
                       productId:
@@ -923,19 +1022,6 @@ paths:
                         type: number
                       imageUrl:
                         type: string
-                      status:
-                        enum:
-                          - pending
-                          - partially_fulfilled
-                          - fulfilled
-                          - error
-                          - refunded
-                          - exception
-                          - cancelled
-                          - generating_labels
-                          - externally_handled
-                          - in_transit
-                          - delivered
                       weight:
                         type: number
                       weightUnit:
@@ -947,7 +1033,6 @@ paths:
                     required:
                       - name
                       - quantity
-                      - status
               required:
                 - status
                 - storeOrderId
@@ -958,24 +1043,25 @@ paths:
                 - currency
                 - shippingMethod
                 - paymentMethod
-                - customerName
         required: true
       security:
         - oaAuth:
             - orders:write
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
               schema:
+                additionalProperties: false
                 type: object
                 properties:
                   uuid:
                     format: regex
                     pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
                     type: string
-                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                    examples:
+                      - o-55f5f424-715d-4818-a1d7-deaae095f136
                   updated:
                     format: date-time
                     type: string
@@ -1006,22 +1092,19 @@ paths:
                     type: number
                   subtotal:
                     type: number
-                  tip:
-                    type: number
                   shippingTotal:
                     type: number
                   currency:
-                    enum:
+                    examples:
                       - EUR
                       - USD
                       - GBP
+                    minLength: 3
+                    maxLength: 3
+                    type: string
                   shippingMethod:
                     type: string
                   paymentMethod:
-                    type: string
-                  name:
-                    type: string
-                  customerName:
                     type: string
                   itemsCount:
                     type: number
@@ -1030,6 +1113,7 @@ paths:
                   trackingInformation:
                     type: array
                     items:
+                      additionalProperties: false
                       type: object
                       properties:
                         number:
@@ -1060,14 +1144,14 @@ paths:
                       date:
                         format: date-time
                         type: string
-                    required:
-                      - message
                   shippingInformation:
+                    additionalProperties: false
                     type: object
                     properties:
                       parcels:
                         type: array
                         items:
+                          additionalProperties: false
                           type: object
                           properties:
                             uuid:
@@ -1079,10 +1163,13 @@ paths:
                             monetaryValue:
                               type: number
                             currency:
-                              enum:
+                              examples:
                                 - EUR
                                 - USD
                                 - GBP
+                              minLength: 3
+                              maxLength: 3
+                              type: string
                             referenceNumber:
                               type: string
                             description:
@@ -1119,22 +1206,24 @@ paths:
                       shipmentDetails:
                         type: object
                         properties:
-                          description:
-                            type: string
                           carrierNotes:
                             type: string
                           goodsMonetaryValue:
                             type: number
                           goodsCurrency:
-                            enum:
+                            examples:
                               - EUR
                               - USD
                               - GBP
+                            minLength: 3
+                            maxLength: 3
+                            type: string
                           shipmentReferences:
                             type: array
                             items:
                               type: string
                       additionalServices:
+                        additionalProperties: false
                         type: object
                         properties:
                           insurance:
@@ -1143,10 +1232,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -1156,10 +1248,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -1187,7 +1282,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -1220,7 +1315,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -1239,11 +1334,43 @@ paths:
                           - state
                           - countryIsoCode
                           - zipCode
+                      addressDelivery:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ""
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      pudoId:
+                        type: string
                   deliveryDayEstimate:
                     format: date-time
                     type: string
-                  returnCreated:
-                    type: boolean
                   items:
                     type: array
                     items:
@@ -1253,11 +1380,10 @@ paths:
                           format: regex
                           pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
                           type: string
-                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                          examples:
+                            - i-e601fbc7-d527-4eb0-a9cb-81c0678ef73e
                         quantity:
                           type: number
-                        status:
-                          type: string
                         name:
                           type: string
                         weight:
@@ -1278,7 +1404,6 @@ paths:
                       required:
                         - uuid
                         - quantity
-                        - status
                         - name
                 required:
                   - uuid
@@ -1287,23 +1412,9 @@ paths:
                   - storeCreationDate
                   - total
                   - currency
-                  - customerName
                   - items
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -1311,12 +1422,12 @@ paths:
                 properties:
                   error:
                     type: string
-  /v1/orders/{storeOrderId}/carrier:
+  "/api-store/v1/orders/{storeOrderId}/carrier":
     post:
       operationId: setShippingCarrierForOrder
       summary: Set shipping carrier for order
       tags:
-        - orders
+        - api-store
       description: Set shipping carrier and relative service for order
       requestBody:
         content:
@@ -1333,27 +1444,29 @@ paths:
                 - serviceCode
         required: true
       parameters:
-        - in: path
+        - schema:
+            type: string
+          in: path
           name: storeOrderId
           required: true
-          schema:
-            type: string
       security:
         - oaAuth:
             - orders:write
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
               schema:
+                additionalProperties: false
                 type: object
                 properties:
                   uuid:
                     format: regex
                     pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
                     type: string
-                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                    examples:
+                      - o-55f5f424-715d-4818-a1d7-deaae095f136
                   updated:
                     format: date-time
                     type: string
@@ -1384,22 +1497,19 @@ paths:
                     type: number
                   subtotal:
                     type: number
-                  tip:
-                    type: number
                   shippingTotal:
                     type: number
                   currency:
-                    enum:
+                    examples:
                       - EUR
                       - USD
                       - GBP
+                    minLength: 3
+                    maxLength: 3
+                    type: string
                   shippingMethod:
                     type: string
                   paymentMethod:
-                    type: string
-                  name:
-                    type: string
-                  customerName:
                     type: string
                   itemsCount:
                     type: number
@@ -1408,6 +1518,7 @@ paths:
                   trackingInformation:
                     type: array
                     items:
+                      additionalProperties: false
                       type: object
                       properties:
                         number:
@@ -1438,14 +1549,14 @@ paths:
                       date:
                         format: date-time
                         type: string
-                    required:
-                      - message
                   shippingInformation:
+                    additionalProperties: false
                     type: object
                     properties:
                       parcels:
                         type: array
                         items:
+                          additionalProperties: false
                           type: object
                           properties:
                             uuid:
@@ -1457,10 +1568,13 @@ paths:
                             monetaryValue:
                               type: number
                             currency:
-                              enum:
+                              examples:
                                 - EUR
                                 - USD
                                 - GBP
+                              minLength: 3
+                              maxLength: 3
+                              type: string
                             referenceNumber:
                               type: string
                             description:
@@ -1497,22 +1611,24 @@ paths:
                       shipmentDetails:
                         type: object
                         properties:
-                          description:
-                            type: string
                           carrierNotes:
                             type: string
                           goodsMonetaryValue:
                             type: number
                           goodsCurrency:
-                            enum:
+                            examples:
                               - EUR
                               - USD
                               - GBP
+                            minLength: 3
+                            maxLength: 3
+                            type: string
                           shipmentReferences:
                             type: array
                             items:
                               type: string
                       additionalServices:
+                        additionalProperties: false
                         type: object
                         properties:
                           insurance:
@@ -1521,10 +1637,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -1534,10 +1653,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -1565,7 +1687,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -1598,7 +1720,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -1617,11 +1739,43 @@ paths:
                           - state
                           - countryIsoCode
                           - zipCode
+                      addressDelivery:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ""
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      pudoId:
+                        type: string
                   deliveryDayEstimate:
                     format: date-time
                     type: string
-                  returnCreated:
-                    type: boolean
                   items:
                     type: array
                     items:
@@ -1631,11 +1785,10 @@ paths:
                           format: regex
                           pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
                           type: string
-                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                          examples:
+                            - i-e601fbc7-d527-4eb0-a9cb-81c0678ef73e
                         quantity:
                           type: number
-                        status:
-                          type: string
                         name:
                           type: string
                         weight:
@@ -1656,7 +1809,6 @@ paths:
                       required:
                         - uuid
                         - quantity
-                        - status
                         - name
                 required:
                   - uuid
@@ -1665,23 +1817,9 @@ paths:
                   - storeCreationDate
                   - total
                   - currency
-                  - customerName
                   - items
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -1689,15 +1827,14 @@ paths:
                 properties:
                   error:
                     type: string
-  /v1/orders/{storeOrderId}/parcels:
+  "/api-store/v1/orders/{storeOrderId}/parcels":
     post:
       operationId: addShippingParcelsToOrder
       summary: Add shipping parcels to order
       tags:
-        - orders
-      description: >-
-        Add shipping parcels to order, using id of a pre loaded parcel or using
-        raw data of a parcel
+        - api-store
+      description: Add shipping parcels to order, using id of a pre loaded parcel or
+        using raw data of a parcel
       requestBody:
         content:
           application/json:
@@ -1711,7 +1848,8 @@ paths:
                         type: number
                     required:
                       - parcelId
-                  - type: object
+                  - additionalProperties: false
+                    type: object
                     properties:
                       width:
                         type: number
@@ -1743,27 +1881,29 @@ paths:
                       - weightUnit
                       - lengthUnit
       parameters:
-        - in: path
+        - schema:
+            type: string
+          in: path
           name: storeOrderId
           required: true
-          schema:
-            type: string
       security:
         - oaAuth:
             - orders:write
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
               schema:
+                additionalProperties: false
                 type: object
                 properties:
                   uuid:
                     format: regex
                     pattern: /^o-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
                     type: string
-                    example: o-e6e026f5-140c-4d3c-8f8e-5b73675fe25c
+                    examples:
+                      - o-55f5f424-715d-4818-a1d7-deaae095f136
                   updated:
                     format: date-time
                     type: string
@@ -1794,22 +1934,19 @@ paths:
                     type: number
                   subtotal:
                     type: number
-                  tip:
-                    type: number
                   shippingTotal:
                     type: number
                   currency:
-                    enum:
+                    examples:
                       - EUR
                       - USD
                       - GBP
+                    minLength: 3
+                    maxLength: 3
+                    type: string
                   shippingMethod:
                     type: string
                   paymentMethod:
-                    type: string
-                  name:
-                    type: string
-                  customerName:
                     type: string
                   itemsCount:
                     type: number
@@ -1818,6 +1955,7 @@ paths:
                   trackingInformation:
                     type: array
                     items:
+                      additionalProperties: false
                       type: object
                       properties:
                         number:
@@ -1848,14 +1986,14 @@ paths:
                       date:
                         format: date-time
                         type: string
-                    required:
-                      - message
                   shippingInformation:
+                    additionalProperties: false
                     type: object
                     properties:
                       parcels:
                         type: array
                         items:
+                          additionalProperties: false
                           type: object
                           properties:
                             uuid:
@@ -1867,10 +2005,13 @@ paths:
                             monetaryValue:
                               type: number
                             currency:
-                              enum:
+                              examples:
                                 - EUR
                                 - USD
                                 - GBP
+                              minLength: 3
+                              maxLength: 3
+                              type: string
                             referenceNumber:
                               type: string
                             description:
@@ -1907,22 +2048,24 @@ paths:
                       shipmentDetails:
                         type: object
                         properties:
-                          description:
-                            type: string
                           carrierNotes:
                             type: string
                           goodsMonetaryValue:
                             type: number
                           goodsCurrency:
-                            enum:
+                            examples:
                               - EUR
                               - USD
                               - GBP
+                            minLength: 3
+                            maxLength: 3
+                            type: string
                           shipmentReferences:
                             type: array
                             items:
                               type: string
                       additionalServices:
+                        additionalProperties: false
                         type: object
                         properties:
                           insurance:
@@ -1931,10 +2074,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -1944,10 +2090,13 @@ paths:
                               monetaryValue:
                                 type: number
                               currency:
-                                enum:
+                                examples:
                                   - EUR
                                   - USD
                                   - GBP
+                                minLength: 3
+                                maxLength: 3
+                                type: string
                             required:
                               - monetaryValue
                               - currency
@@ -1975,7 +2124,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -2008,7 +2157,7 @@ paths:
                           city:
                             type: string
                           state:
-                            default: ''
+                            default: ""
                             type: string
                           countryIsoCode:
                             maxLength: 2
@@ -2027,11 +2176,43 @@ paths:
                           - state
                           - countryIsoCode
                           - zipCode
+                      addressDelivery:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          companyName:
+                            type: string
+                          street:
+                            type: string
+                          street2:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            default: ""
+                            type: string
+                          countryIsoCode:
+                            maxLength: 2
+                            type: string
+                          zipCode:
+                            type: string
+                          phoneNumber:
+                            type: string
+                          email:
+                            format: email
+                            type: string
+                        required:
+                          - name
+                          - city
+                          - state
+                          - countryIsoCode
+                          - zipCode
+                      pudoId:
+                        type: string
                   deliveryDayEstimate:
                     format: date-time
                     type: string
-                  returnCreated:
-                    type: boolean
                   items:
                     type: array
                     items:
@@ -2041,11 +2222,10 @@ paths:
                           format: regex
                           pattern: ^i-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
                           type: string
-                          example: i-c1beb750-4841-41ad-a4d2-cdb5f710e7c4
+                          examples:
+                            - i-e601fbc7-d527-4eb0-a9cb-81c0678ef73e
                         quantity:
                           type: number
-                        status:
-                          type: string
                         name:
                           type: string
                         weight:
@@ -2066,7 +2246,6 @@ paths:
                       required:
                         - uuid
                         - quantity
-                        - status
                         - name
                 required:
                   - uuid
@@ -2075,23 +2254,9 @@ paths:
                   - storeCreationDate
                   - total
                   - currency
-                  - customerName
                   - items
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -2099,737 +2264,30 @@ paths:
                 properties:
                   error:
                     type: string
-  /v1/orders/{storeOrderId}/rate/{carrierId}:
-    get:
-      operationId: getShippingRate
-      summary: Get shipping rate
-      tags:
-        - shipments
-      description: Get shipping rate for order using selected carrier id
-      parameters:
-        - in: path
-          name: storeOrderId
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: carrierId
-          required: true
-          schema:
-            type: number
-      security:
-        - oaAuth:
-            - shipments:read
-      responses:
-        '200':
-          description: Default Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  price:
-                    type: number
-                  currency:
-                    enum:
-                      - EUR
-                      - USD
-                      - GBP
-                  serviceCode:
-                    type: string
-                  serviceName:
-                    type: string
-        '429':
-          description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-  /v1/orders/ship:
-    post:
-      operationId: shipOrder
-      summary: Ship order
-      tags:
-        - shipments
-      description: Ship order
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: string
-      security:
-        - oaAuth:
-            - shipments:write
-      responses:
-        '200':
-          description: Default Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                required:
-                  - success
-        '429':
-          description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-  /v1/orders/shipment/{uuid}:
-    delete:
-      operationId: deleteShipment
-      summary: Delete a shipment
-      tags:
-        - shipments
-      description: Delete a shipment using shipment id
-      parameters:
-        - in: path
-          name: uuid
-          required: true
-          schema:
-            type: string
-      security:
-        - oaAuth:
-            - shipments:write
-      responses:
-        '200':
-          description: Default Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                required:
-                  - success
-        '429':
-          description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-    get:
-      operationId: getShipment
-      summary: Get a data shipment
-      tags:
-        - shipments
-      description: Get a shipment data using shipment id
-      parameters:
-        - in: path
-          name: uuid
-          required: true
-          schema:
-            type: string
-      security:
-        - oaAuth:
-            - shipments:read
-      responses:
-        '200':
-          description: Default Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  uuid:
-                    format: regex
-                    pattern: ^req-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
-                    type: string
-                    example: req-0f65bfef-f9ec-4e56-8bf3-3a4ad41beec3
-                  created:
-                    format: date-time
-                    type: string
-                  addressFrom:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      companyName:
-                        type: string
-                      street:
-                        type: string
-                      street2:
-                        type: string
-                      city:
-                        type: string
-                      state:
-                        default: ''
-                        type: string
-                      countryIsoCode:
-                        maxLength: 2
-                        type: string
-                      zipCode:
-                        type: string
-                      phoneNumber:
-                        type: string
-                      email:
-                        format: email
-                        type: string
-                    required:
-                      - name
-                      - street
-                      - city
-                      - state
-                      - countryIsoCode
-                      - zipCode
-                    deprecated: true
-                  addressTo:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      companyName:
-                        type: string
-                      street:
-                        type: string
-                      street2:
-                        type: string
-                      city:
-                        type: string
-                      state:
-                        default: ''
-                        type: string
-                      countryIsoCode:
-                        maxLength: 2
-                        type: string
-                      zipCode:
-                        type: string
-                      phoneNumber:
-                        type: string
-                      email:
-                        format: email
-                        type: string
-                    required:
-                      - name
-                      - street
-                      - city
-                      - state
-                      - countryIsoCode
-                      - zipCode
-                    deprecated: true
-                  addressReturn:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      companyName:
-                        type: string
-                      street:
-                        type: string
-                      street2:
-                        type: string
-                      city:
-                        type: string
-                      state:
-                        default: ''
-                        type: string
-                      countryIsoCode:
-                        maxLength: 2
-                        type: string
-                      zipCode:
-                        type: string
-                      phoneNumber:
-                        type: string
-                      email:
-                        format: email
-                        type: string
-                    required:
-                      - name
-                      - street
-                      - city
-                      - state
-                      - countryIsoCode
-                      - zipCode
-                  alphanumericRef:
-                    type: string
-                  status:
-                    enum:
-                      - shipped
-                      - to_ship
-                      - error
-                      - deleted
-                  pickedUp:
-                    default: false
-                    type: boolean
-                  pickUpRef:
-                    type: string
-                  pickUpId:
-                    format: uuid
-                    type: string
-                  trackingStatus:
-                    enum:
-                      - P
-                      - T
-                      - D
-                      - E
-                      - F
-                      - R
-                      - U
-                  parcels:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        uuid:
-                          format: regex
-                          pattern: ^res-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
-                          type: string
-                          example: res-121c15b4-b7cc-4cf0-8583-d92d8bc0217c
-                        created:
-                          format: date-time
-                          type: string
-                        labelUrl:
-                          type: string
-                        labelType:
-                          type: string
-                        labelFormat:
-                          type: string
-                        trackingNumber:
-                          type: string
-                        trackingUrl:
-                          type: string
-                        shipmentRef:
-                          type: string
-                        returnLabel:
-                          type: object
-                          properties:
-                            labelUrl:
-                              type: string
-                            labelType:
-                              type: string
-                            labelFormat:
-                              type: string
-                            trackingNumber:
-                              type: string
-                          required:
-                            - labelUrl
-                            - labelType
-                            - trackingNumber
-                        documents:
-                          type: object
-                          properties:
-                            waybill:
-                              type: string
-                            shipmentReceipt:
-                              type: string
-                        extra: {}
-                      required:
-                        - uuid
-                        - created
-                        - labelUrl
-                        - labelType
-                        - trackingNumber
-                  extra: {}
-                  error:
-                    type: object
-                    properties:
-                      message: {}
-                      code:
-                        type: string
-                      i18nCode:
-                        type: string
-                    required:
-                      - message
-                required:
-                  - uuid
-                  - created
-        '429':
-          description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-  /v1/orders/{storeOrderId}/shipment:
-    get:
-      operationId: getShipmentByStoreOrderId
-      summary: Get a shipment data using
-      tags:
-        - shipments
-      description: Get a shipment data using store order id
-      parameters:
-        - in: path
-          name: storeOrderId
-          required: true
-          schema:
-            type: string
-      security:
-        - oaAuth:
-            - shipments:read
-      responses:
-        '200':
-          description: Default Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  uuid:
-                    format: regex
-                    pattern: ^req-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
-                    type: string
-                    example: req-0f65bfef-f9ec-4e56-8bf3-3a4ad41beec3
-                  created:
-                    format: date-time
-                    type: string
-                  addressFrom:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      companyName:
-                        type: string
-                      street:
-                        type: string
-                      street2:
-                        type: string
-                      city:
-                        type: string
-                      state:
-                        default: ''
-                        type: string
-                      countryIsoCode:
-                        maxLength: 2
-                        type: string
-                      zipCode:
-                        type: string
-                      phoneNumber:
-                        type: string
-                      email:
-                        format: email
-                        type: string
-                    required:
-                      - name
-                      - street
-                      - city
-                      - state
-                      - countryIsoCode
-                      - zipCode
-                    deprecated: true
-                  addressTo:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      companyName:
-                        type: string
-                      street:
-                        type: string
-                      street2:
-                        type: string
-                      city:
-                        type: string
-                      state:
-                        default: ''
-                        type: string
-                      countryIsoCode:
-                        maxLength: 2
-                        type: string
-                      zipCode:
-                        type: string
-                      phoneNumber:
-                        type: string
-                      email:
-                        format: email
-                        type: string
-                    required:
-                      - name
-                      - street
-                      - city
-                      - state
-                      - countryIsoCode
-                      - zipCode
-                    deprecated: true
-                  addressReturn:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      companyName:
-                        type: string
-                      street:
-                        type: string
-                      street2:
-                        type: string
-                      city:
-                        type: string
-                      state:
-                        default: ''
-                        type: string
-                      countryIsoCode:
-                        maxLength: 2
-                        type: string
-                      zipCode:
-                        type: string
-                      phoneNumber:
-                        type: string
-                      email:
-                        format: email
-                        type: string
-                    required:
-                      - name
-                      - street
-                      - city
-                      - state
-                      - countryIsoCode
-                      - zipCode
-                  alphanumericRef:
-                    type: string
-                  status:
-                    enum:
-                      - shipped
-                      - to_ship
-                      - error
-                      - deleted
-                  pickedUp:
-                    default: false
-                    type: boolean
-                  pickUpRef:
-                    type: string
-                  pickUpId:
-                    format: uuid
-                    type: string
-                  trackingStatus:
-                    enum:
-                      - P
-                      - T
-                      - D
-                      - E
-                      - F
-                      - R
-                      - U
-                  parcels:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        uuid:
-                          format: regex
-                          pattern: ^res-[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$
-                          type: string
-                          example: res-121c15b4-b7cc-4cf0-8583-d92d8bc0217c
-                        created:
-                          format: date-time
-                          type: string
-                        labelUrl:
-                          type: string
-                        labelType:
-                          type: string
-                        labelFormat:
-                          type: string
-                        trackingNumber:
-                          type: string
-                        trackingUrl:
-                          type: string
-                        shipmentRef:
-                          type: string
-                        returnLabel:
-                          type: object
-                          properties:
-                            labelUrl:
-                              type: string
-                            labelType:
-                              type: string
-                            labelFormat:
-                              type: string
-                            trackingNumber:
-                              type: string
-                          required:
-                            - labelUrl
-                            - labelType
-                            - trackingNumber
-                        documents:
-                          type: object
-                          properties:
-                            waybill:
-                              type: string
-                            shipmentReceipt:
-                              type: string
-                        extra: {}
-                      required:
-                        - uuid
-                        - created
-                        - labelUrl
-                        - labelType
-                        - trackingNumber
-                  extra: {}
-                  error:
-                    type: object
-                    properties:
-                      message: {}
-                      code:
-                        type: string
-                      i18nCode:
-                        type: string
-                    required:
-                      - message
-                required:
-                  - uuid
-                  - created
-        '429':
-          description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-    delete:
-      operationId: deleteShipmentByStoreOrderId
-      summary: Delete a shipment
-      tags:
-        - shipments
-      description: Delete a shipment using store order id
-      parameters:
-        - in: path
-          name: storeOrderId
-          required: true
-          schema:
-            type: string
-      security:
-        - oaAuth:
-            - shipments:write
-      responses:
-        '200':
-          description: Default Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                required:
-                  - success
-        '429':
-          description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-  /v1/orders/{storeOrderId}/tracking:
+  "/api-store/v1/orders/{storeOrderId}/tracking":
     get:
       operationId: getShipmentTracking
       summary: Get shipment tracking
       tags:
-        - orders
-        - shipment
+        - api-store
       description: Get shipment tracking data using the order Id
       parameters:
-        - in: path
+        - schema:
+            type: string
+          in: path
           name: storeOrderId
           required: true
-          schema:
-            type: string
       security:
         - oaAuth:
             - orders:read
             - shipment:read
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
               schema:
+                additionalProperties: false
                 type: object
                 properties:
                   uuid:
@@ -2918,24 +2376,10 @@ paths:
                   - created
                   - status
                   - trackingNumber
-                  - trackingUrl
                   - delivered
                   - steps
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -2943,24 +2387,25 @@ paths:
                 properties:
                   error:
                     type: string
-  /v1/packages/:
+  /api-store/v1/packages/:
     get:
       operationId: getShippingParcels
       summary: Get shipping parcels
       tags:
-        - parcels
+        - api-store
       description: Get available shipping parcels for the current company
       security:
         - oaAuth:
             - parcels:read
       responses:
-        '200':
+        "200":
           description: Default Response
           content:
             application/json:
               schema:
                 type: array
                 items:
+                  additionalProperties: false
                   type: object
                   properties:
                     id:
@@ -2999,21 +2444,8 @@ paths:
                     - weight
                     - weightUnit
                     - lengthUnit
-        '429':
+        "429":
           description: Default Response
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: number
-                example: 300
-            X-RateLimit-Reset:
-              schema:
-                type: number
-                example: 60
-            Retry-After:
-              schema:
-                type: number
-                example: 60000
           content:
             application/json:
               schema:
@@ -3022,4 +2454,4 @@ paths:
                   error:
                     type: string
 servers:
-  - url: https://api.isendu.dev/
+  - url: https://api.isnd.io
