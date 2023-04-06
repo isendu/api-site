@@ -32,7 +32,7 @@ jobs:
         uses: actions/configure-pages@v3
       - uses: redkubes/docusaurus-deploy-action@v1
         with:
-          source-folder: /
+          source-folder: .
           git-user: e-pacciani
           git-password: ${{ secrets.GITHUB_TOKEN }}
           deployment-branch: gh-pages
