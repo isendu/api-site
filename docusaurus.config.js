@@ -8,7 +8,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 const config = {
   title: "Isendu API",
   tagline: "Isendu are cool",
-  url: "https://publicapi.isendu.dev",
+  url: "https://isendu.github.io/api-site/",
   baseUrl: "/",
   onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
