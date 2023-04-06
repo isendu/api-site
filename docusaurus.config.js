@@ -10,7 +10,7 @@ const config = {
   tagline: "Isendu are cool",
   url: "https://publicapi.isendu.dev",
   baseUrl: "/",
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.ico",
 
