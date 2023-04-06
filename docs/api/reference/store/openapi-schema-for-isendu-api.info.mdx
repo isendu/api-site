@@ -1,0 +1,24 @@
+---
+id: openapi-schema-for-isendu-api
+title: "OpenApi Schema for isendu API"
+description: "isendu API available for all customers"
+sidebar_label: Authentication schemas
+sidebar_position: 0
+hide_title: true
+custom_edit_url: null
+---
+
+import ApiLogo from "@theme/ApiLogo";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+import Export from "@theme/ApiDemoPanel/Export";
+
+<span className={"theme-doc-version-badge badge badge--secondary"}>Version: 1.0.0</span>
+
+# OpenApi Schema for isendu API
+
+
+
+isendu API available for all customers
+
+<div style={{"marginBottom":"2rem"}}><h2 id={"authentication"} style={{"marginBottom":"1rem"}}>Authentication</h2><SchemaTabs className={"openapi-tabs__security-schemes"}><TabItem label={"OAuth 2.0: oaAuth"} value={"oaAuth"}><div><table><tbody><tr><th>Security Scheme Type:</th><td>oauth2</td></tr><tr><th>OAuth Flow (clientCredentials):</th><td><p>Token URL: /api-store/oauth/token</p><span>Scopes:</span><ul><li>order:write: Create/delete/update order</li><li>order:read: Read order</li><li>shipment:write: Create/delete shipment</li><li>shipment:read: Read shipment</li><li>tracking:read: Get tracking</li><li>carriers:read: Get carriers</li><li>parcels:read: Get parcels</li></ul></td></tr></tbody></table></div></TabItem><TabItem label={"HTTP: Bearer Auth"} value={"bearerS2SAuth"}><div><table><tbody><tr><th>Security Scheme Type:</th><td>http</td></tr><tr><th>HTTP Authorization Scheme:</th><td>bearer</td></tr><tr><th>Bearer format:</th><td>JWT</td></tr></tbody></table></div></TabItem><TabItem label={"API Key: apiKey"} value={"apiKey"}><div><table><tbody><tr><th>Security Scheme Type:</th><td>apiKey</td></tr><tr><th>Header parameter name:</th><td>x-api-key</td></tr></tbody></table></div></TabItem></SchemaTabs></div>
