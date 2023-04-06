@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstore_api=self.webpackChunkstore_api||[]).push([[7296],{56915:e=>{e.exports=JSON.parse('{"label":"hello","permalink":"/api-site/blog/tags/hello","allTagsPath":"/api-site/blog/tags","count":2}')}}]);
