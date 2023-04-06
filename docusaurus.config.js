@@ -46,7 +46,7 @@ const config = {
           admonitions: {
             tag: ":::",
             keywords: ["note", "tip", "info", "caution", "danger"],
-          }
+          },
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
@@ -74,13 +74,12 @@ const config = {
             to: "/docs/api/intro",
             position: "left",
             label: "API",
-          }
+          },
         ],
       },
       footer: {
         style: "dark",
-        links: [{ label: "isendu.com", href: "https://www.isendu.com" }],
-        copyright: `Copyright © ${new Date().getFullYear()} isendu API, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} isendu API, Inc. - <a href="https://www.isendu.com" target="_blank">isendu.com</a>`,
       },
       prism: {
         theme: lightCodeTheme,
@@ -110,10 +109,7 @@ const config = {
     ],
   ],
 
-  themes: [
-    "@docusaurus/theme-mermaid",
-    "docusaurus-theme-openapi-docs"
-  ],
+  themes: ["@docusaurus/theme-mermaid", "docusaurus-theme-openapi-docs"],
 };
 
 module.exports = config;
