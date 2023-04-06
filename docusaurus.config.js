@@ -8,7 +8,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 const config = {
   title: "Isendu API",
   tagline: "Isendu are cool",
-  url: "https://www.isendu.com",
+  url: "https://publicapi.isendu.dev",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -18,6 +18,8 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "isendu", // Usually your GitHub org/user name.
   projectName: "api-store", // Usually your repo name.
+  deploymentBranch: "main", // Branch that contains the deployed site.
+  trailingSlash: false,
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
