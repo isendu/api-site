@@ -68,8 +68,8 @@ const config = {
       navbar: {
         logo: {
           alt: "Isendu",
-          src: "https://isendu-cdn-static-files.s3.eu-central-1.amazonaws.com/new_logo/isu_logo.svg",
-          style: { background: "white", padding: "8px", borderRadius: "8px" },
+          src: "https://static-files-cdn.isendu.com/logo/isu_logo_W.svg",
+          style: { padding: "8px" },
         },
         items: [
           {
