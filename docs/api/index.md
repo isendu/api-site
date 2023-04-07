@@ -17,4 +17,4 @@ All APIs have a soft rate limit at 300 calls per minute.
 :::
 
 - Available APIs [description](intro.md)
-- APIs [Reference](reference)
+- APIs [Reference](/docs/api/reference/store)
