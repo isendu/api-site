@@ -14,13 +14,16 @@ Complete the form with the name of your integration, description, and the webook
 
 ![api-generate-key-2.jpg](../../../assets/api-generate-key-2.jpg)
 
+:::caution Important
+Webhook url is mandatory. For more information about webhook, see [Webhook](./webhook.md).
+:::
+
 Finally, copy the credentials and save them in a secure place.
 
 ![api-generate-key-3.jpg](../../../assets/api-generate-key-3.jpg)
 
 :::caution Important
 Secret ID key os unique and cannot be regenerated. If you lose this, you will have to create a new integration.
-
 :::
 
 ## Second: get a token for your requests

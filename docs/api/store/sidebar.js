@@ -43,6 +43,7 @@ module.exports = {
             ]
         },
         "api/store/carrier",
-        "api/store/parcel"
+        "api/store/parcel",
+        "api/store/webhook"
     ],
 };
