@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkstore_api=self.webpackChunkstore_api||[]).push([[7665],{35672:e=>{e.exports=JSON.parse('{"permalink":"/api-site/blog/tags/hola","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

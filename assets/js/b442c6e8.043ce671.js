@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkstore_api=self.webpackChunkstore_api||[]).push([[3766],{72532:a=>{a.exports=JSON.parse('{"label":"facebook","permalink":"/api-site/blog/tags/facebook","allTagsPath":"/api-site/blog/tags","count":1}')}}]);

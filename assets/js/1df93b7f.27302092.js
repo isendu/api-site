@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstore_api=self.webpackChunkstore_api||[]).push([[237],{69754:(e,t,r)=>{r.r(t),r.d(t,{default:()=>n});var a=r(67294),s=r(76775);function n(){return a.createElement(s.l_,{to:"/docs/api/intro"})}}}]);
