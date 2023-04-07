@@ -17,7 +17,7 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "isendu", // Usually your GitHub org/user name.
   projectName: "api-store", // Usually your repo name.
-  deploymentBranch: "main", // Branch that contains the deployed site.
+  deploymentBranch: "gh-pages", // Branch that contains the deployed site.
   trailingSlash: false,
 
   // Even if you don't use internalization, you can use this field to set useful
