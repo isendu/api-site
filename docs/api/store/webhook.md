@@ -17,7 +17,7 @@ To verify the operativity of the webhook URL, a POST request with the following 
 }
 ```
 
-The webhook url must respond with a 200 status code and payload containing the secret key of the API integration.
+The webhook url must respond with a 200 status code and a payload containing the secret key of the API integration.
 
 :::note
 If the webhook url does not respond with a 200 status code within 5 seconds, the webhook url will be considered invalid and will not be used.
